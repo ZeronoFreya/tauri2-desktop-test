@@ -1,2 +1,2 @@
-# tauri2--
+# tauri2-desktop-test
 测试 v2 作为桌面软件是否合格
