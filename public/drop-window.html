@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <script>
+        const { event, window: tauriWindow, core } = window.__TAURI__;
+
+        const curr_window = tauriWindow.getCurrentWindow();
+
+        const unlisten = event.listen("tauri://drag-enter", (e) => {
+            console.log("拖放事件:", e);
+            if (e.payload && e.payload.paths) {
+                core.invoke("update_drop_files", {
+                    files: e.payload.paths,
+                }).then((files) => {
+                    curr_window.hide();
+                });
+            }
+        });
+
+        // 窗口关闭时移除监听
+        event.listen("tauri://close-requested", () => {
+            unlisten.then((f) => f());
+        });
+
+        document.addEventListener(
+            "mousedown",
+            function () {
+                console.log("mousedown");
+                curr_window.hide();
+            },
+            false
+        );
+    </script>
+</html>
