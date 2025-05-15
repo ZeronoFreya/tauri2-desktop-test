@@ -37,7 +37,7 @@ export default {
 </script>
 
 <template lang="pug">
-.drag-handle(@mousedown.prevent="handleDrag") 拖拽到外部程序      
+.drag-handle(@mousedown.prevent="handleDrag") 拖拽到外部程序（tauri.svg）比如浏览器   
 </template>
 
 <style lang="scss">
