@@ -26,7 +26,7 @@ export default function useGlobalDrag() {
       state.dragStatus.value = DragState.INTERNAL_DRAG;
     };
 
-    const handleDragEnter = (e) => {
+    const handleDragEnter = async (e) => {
       e.preventDefault();
       if (state.dragStatus.value === DragState.IDLE) {
         state.dragStatus.value = DragState.EXTERNAL_OVER;

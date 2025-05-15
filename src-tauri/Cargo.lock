@@ -3981,6 +3981,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-drag",
  "tauri-plugin-opener",
+ "winapi",
 ]
 
 [[package]]
