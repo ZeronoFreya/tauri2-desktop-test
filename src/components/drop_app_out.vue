@@ -1,20 +1,24 @@
 <script>
 import { ref } from "vue";
 import { startDrag } from "@crabnebula/tauri-plugin-drag";
-import useGlobalDrag from '@c/useGlobalDrag'
+import { resolve } from '@tauri-apps/api/path';
+import useGlobalDrag from "@c/useGlobalDrag";
 
 export default {
     components: {},
     setup() {
-        const { asDragDom } = useGlobalDrag()
+        const { asDragDom } = useGlobalDrag();
 
-        const filePath = ref("c:\\vue.svg");
+        const filePath = ref("");
+        resolve('../public/tauri.svg').then((p) => {
+            filePath.value = p;            
+        });
         const handleDrag = async (e) => {
             e.preventDefault();
             e.stopPropagation();
             if (!filePath.value) return;
             try {
-                asDragDom()
+                asDragDom();
                 await startDrag({
                     item: [filePath.value],
                     icon: "",
