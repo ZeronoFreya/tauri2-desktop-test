@@ -4,15 +4,18 @@ use std::sync::LazyLock;
 use std::path::Path;
 use serde::{Serialize, Deserialize};
 
+/// 表示文件或目录的信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileInfo {
+    /// 文件或目录的路径
     pub path: String,
+    /// 是否为目录
     pub is_dir: bool,
 }
 
 static DROP_FILES: LazyLock<Mutex<Vec<FileInfo>>> = LazyLock::new(|| Mutex::new(Vec::new()));
 
-
+/// 创建一个用于文件拖放的窗口
 #[tauri::command]
 pub async fn create_drop_window(app: tauri::AppHandle) -> Result<(), String>{
   if app.get_webview_window("drop-window").is_some() {
@@ -40,9 +43,10 @@ pub async fn create_drop_window(app: tauri::AppHandle) -> Result<(), String>{
   Ok(())
 }
 
-
-
-
+/// 更新拖拽的文件列表到 DROP_FILES
+/// 
+/// # 参数
+/// * `files` - 数组，每个元素为文件路径字符串
 #[tauri::command]
 pub fn update_drop_files(files: Vec<String>) -> Result<(), String> {
     let mut file_infos = Vec::new();
@@ -58,6 +62,7 @@ pub fn update_drop_files(files: Vec<String>) -> Result<(), String> {
     Ok(())
 }
 
+/// 获取并清空拖放文件列表
 #[tauri::command]
 pub fn take_drop_files() -> Result<Vec<FileInfo>, String> {
     let mut drop_files = DROP_FILES.lock().map_err(|e| e.to_string())?;
@@ -73,7 +78,7 @@ pub async fn hide_drop_window(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 
-
+/// 显示拖拽文件窗口, 覆盖到主窗口
 #[tauri::command]
 pub async fn show_drop_window(app: tauri::AppHandle) -> Result<(), String> {
   // println!("show_drop_window");
