@@ -51,7 +51,6 @@ pub fn run() {
             drop::create_drop_window,
             drop::hide_drop_window,
             drop::show_drop_window,
-            drop::update_drop_files,
             drop::take_drop_files
         ])
         .run(tauri::generate_context!())
