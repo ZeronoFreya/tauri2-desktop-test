@@ -29,6 +29,8 @@ Tauri2如果要获取拖拽文件的`真实路径`，必须开启`dragDropEnable
 
 ---
 
+## 打算重构为仅用rust实现拖拽捕获功能，以下内容随时可能更改
+
 只解释必要的部分
 * 前端
     * public\drop-window.html  透明窗口用到的页面

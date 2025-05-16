@@ -3,49 +3,70 @@
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+// use std::sync::Arc;
 
-// use tauri::{Manager, PhysicalPosition};
-// use winapi::um::winuser::{SetWindowLongPtrW, GWLP_HWNDPARENT};
-// use winapi::um::windef::HWND;
-
-// #[tauri::command]
-// fn create_child_window(parent: tauri::Window) {
-//     let child = WebviewWindow::builder()
-//         .label("child")
-//         .url("child.html")
-//         .inner_size(300, 200)
-//         .build()
-//         .unwrap();
-
-//     // 获取原生窗口句柄
-//     let parent_hwnd = parent.hwnd().unwrap() as HWND;
-//     let child_hwnd = child.hwnd().unwrap() as HWND;
-
-//     // 设置父子关系
-//     unsafe {
-//         SetWindowLongPtrW(child_hwnd, GWLP_HWNDPARENT, parent_hwnd as _);
-//     }
-
-//     // 初始位置偏移
-//     let parent_pos = parent.outer_position().unwrap();
-//     child.set_position(PhysicalPosition {
-//         x: parent_pos.x + 50,
-//         y: parent_pos.y + 50,
-//     }).unwrap();
-// }
-
+struct WindowTracker {
+    child: tauri::WebviewWindow,
+    offset: (i32, i32),
+}
+use tauri::{Manager, PhysicalPosition, WindowEvent};
 mod drop;
+// mod tab;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_dialog::init())
-        // .setup(|app| {
-        //     let main_window = app.get_window("main").unwrap();
-        //     create_child_window(&main_window);
-        //     Ok(())
-        // })
+        .plugin(tauri_plugin_positioner::init())
+        .setup(|app| {
+            let parent = app
+                .get_webview_window("main")
+                .ok_or("Main window not found")?;
+
+            let app_handle = app.handle().clone();
+
+            // 计算初始偏移
+            let parent_inner_pos = parent.inner_position()?;
+            let parent_outer_pos = parent.outer_position()?;
+
+
+            let offset = (
+                parent_inner_pos.x - parent_outer_pos.x,
+                parent_inner_pos.y - parent_outer_pos.y,
+            );
+
+            // 创建子窗口
+            let child = tauri::WebviewWindowBuilder::new(
+                app,
+                "child-window",
+                tauri::WebviewUrl::App("about:blank".into()),
+            )
+            .inner_size(400.0, 300.0)
+            .position(parent_inner_pos.x as f64, parent_inner_pos.y as f64)
+            .parent(&parent)?
+            .decorations(false)
+            .shadow(false)
+            .build()?;
+
+            // 存储跟踪器
+            app.manage(WindowTracker { child, offset });
+
+            // 监听父窗口移动事件
+            parent.on_window_event(move |event| {
+                if let WindowEvent::Moved(pos) = event {
+                    if let Some(tracker) = app_handle.try_state::<WindowTracker>() {
+                        let new_pos = PhysicalPosition {
+                            x: pos.x + tracker.offset.0,
+                            y: pos.y + tracker.offset.1,
+                        };
+                        let _ = tracker.child.set_position(new_pos);
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             drop::create_drop_window,
