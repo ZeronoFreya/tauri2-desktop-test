@@ -30,7 +30,7 @@ onMounted( () => {
 </script>
 <template lang="pug">
 main.container
-    Title   
+    Title
     .drop-zone-group
         DropApp
         DropDom

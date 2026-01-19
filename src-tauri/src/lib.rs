@@ -26,13 +26,17 @@ pub fn run() {
 
             let app_handle = app.handle().clone();
 
+            let inner_size = parent.inner_size()?;
+
             // 计算初始偏移
             let parent_inner_pos = parent.inner_position()?;
             let parent_outer_pos = parent.outer_position()?;
 
+            
+
 
             let offset = (
-                parent_inner_pos.x - parent_outer_pos.x,
+                parent_inner_pos.x - parent_outer_pos.x + inner_size.width as i32,
                 parent_inner_pos.y - parent_outer_pos.y,
             );
 
@@ -40,10 +44,10 @@ pub fn run() {
             let child = tauri::WebviewWindowBuilder::new(
                 app,
                 "child-window",
-                tauri::WebviewUrl::App("about:blank".into()),
+                tauri::WebviewUrl::App("multiwindow.html".into()),
             )
             .inner_size(400.0, 300.0)
-            .position(parent_inner_pos.x as f64, parent_inner_pos.y as f64)
+            .position(parent_inner_pos.x as f64 + inner_size.width as f64, parent_inner_pos.y as f64)
             .parent(&parent)?
             .decorations(false)
             .shadow(false)
