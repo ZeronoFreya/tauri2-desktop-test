@@ -7,9 +7,9 @@ fn greet(name: &str) -> String {
 
 struct WindowTracker {
     child: tauri::WebviewWindow,
-    offset: (i32, i32),
+    offset: (f64, f64),
 }
-use tauri::{Manager, PhysicalPosition, WindowEvent};
+use tauri::{Manager, PhysicalPosition, PhysicalSize, WindowEvent, WebviewWindowBuilder};
 mod drop;
 // mod tab;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,44 +26,41 @@ pub fn run() {
 
             let app_handle = app.handle().clone();
 
-            let inner_size = parent.inner_size()?;
+            let inner_size: PhysicalSize<u32> = parent.inner_size()?;
 
-            // 计算初始偏移
             let parent_inner_pos = parent.inner_position()?;
             let parent_outer_pos = parent.outer_position()?;
 
             
-
-
             let offset = (
-                parent_inner_pos.x - parent_outer_pos.x + inner_size.width as i32,
-                parent_inner_pos.y - parent_outer_pos.y,
+                (parent_inner_pos.x - parent_outer_pos.x) as f64 + inner_size.width as f64,
+                (parent_inner_pos.y - parent_outer_pos.y) as f64,
             );
 
-            // 创建子窗口
-            let child = tauri::WebviewWindowBuilder::new(
+            let child = WebviewWindowBuilder::new(
                 app,
                 "child-window",
                 tauri::WebviewUrl::App("multiwindow.html".into()),
             )
             .inner_size(400.0, 300.0)
-            .position(parent_inner_pos.x as f64 + inner_size.width as f64, parent_inner_pos.y as f64)
+            .position(
+                parent_inner_pos.x as f64 + inner_size.width as f64,
+                parent_inner_pos.y as f64,
+            )
             .parent(&parent)?
             .decorations(false)
             .shadow(false)
             .build()?;
 
-            // 存储跟踪器
             app.manage(WindowTracker { child, offset });
 
-            // 监听父窗口移动事件
             parent.on_window_event(move |event| {
                 if let WindowEvent::Moved(pos) = event {
                     if let Some(tracker) = app_handle.try_state::<WindowTracker>() {
-                        let new_pos = PhysicalPosition {
-                            x: pos.x + tracker.offset.0,
-                            y: pos.y + tracker.offset.1,
-                        };
+                        let new_pos = PhysicalPosition::new(
+                            pos.x as f64 + tracker.offset.0,
+                            pos.y as f64 + tracker.offset.1,
+                        );
                         let _ = tracker.child.set_position(new_pos);
                     }
                 }
