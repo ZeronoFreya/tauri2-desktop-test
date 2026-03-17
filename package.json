@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri dev"
+    "tauri": "cd src-tauri && cargo run",
+    "cargo_check": "cd src-tauri && cargo check",
+    "build_vite": "vite build -d",
+    "build_tauri": "tauri build"
   },
   "dependencies": {
     "@crabnebula/tauri-plugin-drag": "^2.1.0",

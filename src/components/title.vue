@@ -1,12 +1,11 @@
 <script>
 import { ref } from "vue";
 import { Window } from "@tauri-apps/api/window";
+import { invoke } from '@tauri-apps/api/core'
 
 export default {
     components: {},
     setup() {
-        // const xxEl = ref(null);
-        // const appWindow = new Window("main");
         const appWindow = Window.getCurrent();
         // https://juejin.cn/post/7433822127390556196
         const minimize = () => {
@@ -23,14 +22,19 @@ export default {
             appWindow.close();
         };
 
-        return { minimize, maximize, close };
+        const mousedown = async (e)=>{            
+            await invoke('start_drag');
+        }
+
+        return { minimize, maximize, close, mousedown };
     },
 };
 </script>
 
 <template lang="pug">
 .titlebar
-    .title_label(data-tauri-drag-region) 自定义标题栏
+    //- .title_label(data-tauri-drag-region) 自定义标题栏
+    .title_label(@mousedown="mousedown") 自定义标题栏
     .titlebar-button(@click="minimize")
         img(src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize")
     .titlebar-button(@click="maximize")

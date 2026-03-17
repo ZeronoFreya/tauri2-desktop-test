@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 
-// import { listen, TauriEvent } from "@tauri-apps/api/event";
 import Title from "@c/title.vue";
 import DropApp from "@c/drop_app.vue";
 import DropDom from "@c/drop_dom.vue";
@@ -23,9 +23,21 @@ async function greet() {
     greetMsg.value = await invoke("greet", { name: name.value });
 }
 
-onMounted( () => {
+let unlisten = null;
+onMounted(async () => {
     invoke("create_drop_window");
-})  
+
+    unlisten = await listen("before-close", (event) => {
+        // 监听到窗口关闭事件, 在此处决定是否允许窗口关闭
+        invoke("force_close");
+    });
+});
+
+onUnmounted(() => {
+    if (unlisten) {
+        unlisten();
+    }
+});
 
 </script>
 <template lang="pug">
